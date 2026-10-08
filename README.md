@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FitForge — Forge your best self
 
-## Getting Started
+AI-powered fitness app: personalized workout plans (home or gym), AI diet plans, a live workout tracker, meal/water/weight tracking, progress charts and an AI coach chat.
 
-First, run the development server:
+**Stack:** Next.js 16 (App Router) · Tailwind CSS v4 · Supabase (Auth, Postgres + RLS, Storage) · Claude API (Sonnet 5.5 for plans & coach, Haiku 4.5 for quick estimates) · Recharts
 
+## Setup
+
+### 1. Install
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Create a Supabase project
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Apply the database migrations in [`supabase/migrations/`](supabase/migrations/), either:
+   - **CLI:** `npx supabase login`, `npx supabase link --project-ref <ref>` (asks for the database password), then `npx supabase db push`; or
+   - **SQL Editor:** paste and run each file in order — `0001_init.sql`, `0002_progress_photos.sql`, `0003_full_persistence.sql`.
+3. **Authentication → URL Configuration:** set Site URL to `http://localhost:3000` and add `http://localhost:3000/auth/callback` to Redirect URLs.
+4. *(Optional, faster local testing)* **Authentication → Providers → Email:** turn off "Confirm email".
+5. *(Optional)* **Authentication → Providers → Google:** enable it to use "Continue with Google".
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Environment variables
+```bash
+cp .env.local.example .env.local
+```
+Fill in your Supabase URL, anon key and service-role key (Project Settings → API), and your Anthropic API key ([console.anthropic.com](https://console.anthropic.com)).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Seed the exercise library (~870 exercises with images)
+```bash
+npm run seed:exercises
+```
+Source: [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (public domain).
 
-## Learn More
+### 5. Run
+```bash
+npm run dev
+```
+Open http://localhost:3000.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm test` | Unit tests (health calculations) |
+| `npm run typecheck` | TypeScript check |
+| `npm run lint` | ESLint |
+| `npm run seed:exercises` | Load the exercise library into Supabase |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How it fits together
+- **Health math is deterministic** (`lib/fitness/calculations.ts`): BMI, Mifflin–St Jeor BMR, TDEE, calorie target, macros, water. The AI receives these numbers — it never invents them.
+- **Workout plans** (`lib/ai/plans.ts`): the exercise library is filtered by the user's location, equipment and level; Claude may only pick exercise ids from that list, and output is validated with Zod.
+- **AI coach** (`app/api/ai/chat/route.ts`, `lib/ai/coach.ts`): streams replies, knows the user's profile/plan/logs, and can *propose* plan changes, meal swaps or meal logs that the user applies with one tap.
+- **Security:** every user table has Row Level Security; API keys stay server-side; daily AI quotas per user (`consume_ai_quota` SQL function).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
+Push to GitHub and import into [Vercel](https://vercel.com). Add the same env vars (set `NEXT_PUBLIC_SITE_URL` to your production URL) and add `https://your-domain/auth/callback` to Supabase Redirect URLs.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> FitForge provides general fitness guidance, not medical advice.

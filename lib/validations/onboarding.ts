@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const accountSchema = z.object({
   full_name: z.string().trim().min(2, "Please enter your full name").max(80),
-  email: z.email("Enter a valid email address"),
+  email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address")),
   phone: z
     .string()
     .trim()

@@ -8,6 +8,9 @@ import { accountSchema } from "@/lib/validations/onboarding";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
+// Phone keyboards often capitalise the first letter or add a trailing space.
+const emailField = z.string().trim().toLowerCase().pipe(z.email());
+
 async function siteOrigin() {
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
   const h = await headers();
@@ -42,7 +45,7 @@ export async function signUp(input: unknown): Promise<ActionResult & { needsConf
 }
 
 export async function resendConfirmation(input: unknown): Promise<ActionResult> {
-  const parsed = z.object({ email: z.email() }).safeParse(input);
+  const parsed = z.object({ email: emailField }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Enter a valid email" };
 
   const supabase = await createClient();
@@ -55,7 +58,7 @@ export async function resendConfirmation(input: unknown): Promise<ActionResult> 
   return { ok: true, message: "New confirmation link sent" };
 }
 
-const loginSchema = z.object({ email: z.email(), password: z.string().min(1), next: z.string().optional() });
+const loginSchema = z.object({ email: emailField, password: z.string().min(1), next: z.string().optional() });
 
 export async function signIn(input: unknown): Promise<ActionResult & { unconfirmed?: boolean }> {
   const parsed = loginSchema.safeParse(input);
@@ -75,7 +78,7 @@ export async function signIn(input: unknown): Promise<ActionResult & { unconfirm
 }
 
 export async function requestPasswordReset(input: unknown): Promise<ActionResult> {
-  const parsed = z.object({ email: z.email() }).safeParse(input);
+  const parsed = z.object({ email: emailField }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Enter a valid email" };
 
   const supabase = await createClient();

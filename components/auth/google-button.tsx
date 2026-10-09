@@ -1,11 +1,124 @@
 "use client";
 
-import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Script from "next/script";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { DEMO_MODE } from "@/lib/demo/mode";
 import { createClient } from "@/lib/supabase/client";
 
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+/** Minimal typing for the parts of Google Identity Services we use. */
+type GoogleId = {
+  initialize(config: { client_id: string; nonce: string; callback: (res: { credential: string }) => void }): void;
+  renderButton(el: HTMLElement, options: Record<string, string | number>): void;
+};
+declare global {
+  interface Window {
+    google?: { accounts: { id: GoogleId } };
+  }
+}
+
+/**
+ * Google's own sign-in button (Google Identity Services). Sign-in happens on our domain, so Google's
+ * consent screen names fitforge.fun instead of the Supabase project URL. Falls back to the redirect
+ * flow when no client ID is configured (and in demo mode).
+ */
 export function GoogleButton({ next = "/dashboard" }: { next?: string }) {
+  if (!GOOGLE_CLIENT_ID || DEMO_MODE) return <GoogleRedirectButton next={next} />;
+  return <GoogleIdentityButton clientId={GOOGLE_CLIENT_ID} next={next} />;
+}
+
+function GoogleIdentityButton({ clientId, next }: { clientId: string; next: string }) {
+  const router = useRouter();
+  const slot = useRef<HTMLDivElement>(null);
+  const [scriptReady, setScriptReady] = useState(false);
+  const [rendered, setRendered] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [scriptFailed, setScriptFailed] = useState(false);
+
+  useEffect(() => {
+    if (!scriptReady || !slot.current || !window.google) return;
+    const el = slot.current;
+    const gid = window.google.accounts.id;
+    let cancelled = false;
+
+    (async () => {
+      // Google signs a hash of the nonce into the ID token; Supabase checks it against the raw value.
+      const nonce = randomNonce();
+      const hashedNonce = await sha256Hex(nonce);
+      if (cancelled) return;
+
+      gid.initialize({
+        client_id: clientId,
+        nonce: hashedNonce,
+        callback: async ({ credential }) => {
+          setBusy(true);
+          const { error } = await createClient().auth.signInWithIdToken({ provider: "google", token: credential, nonce });
+          if (error) {
+            toast.error(error.message);
+            setBusy(false);
+            return;
+          }
+          router.replace(next);
+          router.refresh();
+        },
+      });
+      gid.renderButton(el, {
+        type: "standard",
+        theme: "filled_black",
+        size: "large",
+        shape: "pill",
+        text: "continue_with",
+        logo_alignment: "center",
+        width: Math.min(400, Math.max(200, el.offsetWidth)),
+      });
+      setRendered(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [scriptReady, clientId, next, router]);
+
+  // Script blocked (ad blocker, strict privacy settings): use the redirect flow instead.
+  if (scriptFailed) return <GoogleRedirectButton next={next} />;
+
+  return (
+    <>
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onReady={() => setScriptReady(true)}
+        onError={() => setScriptFailed(true)}
+      />
+      <div className="relative flex min-h-11 w-full items-center justify-center">
+        <div ref={slot} className="flex w-full justify-center" />
+        {(!rendered || busy) && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-full border border-line bg-surface text-sm text-muted">
+            <Loader2 className="h-4 w-4 animate-spin" aria-label={busy ? "Signing in" : "Loading Google sign-in"} />
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function randomNonce() {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, "");
+}
+
+async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Redirect-based Google sign-in through Supabase. */
+function GoogleRedirectButton({ next }: { next: string }) {
   const [loading, setLoading] = useState(false);
 
   async function onClick() {

@@ -103,6 +103,11 @@ export function SignupForm() {
         <Button type="submit" className="w-full" size="lg" loading={pending}>
           Create account
         </Button>
+        <p className="text-center text-xs text-muted">
+          You must be 18 or older. By creating an account you agree to our{" "}
+          <Link href="/terms" className="underline hover:text-fg">Terms</Link> and{" "}
+          <Link href="/privacy" className="underline hover:text-fg">Privacy Policy</Link>.
+        </p>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted">

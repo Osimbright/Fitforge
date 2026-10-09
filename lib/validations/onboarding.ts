@@ -22,8 +22,8 @@ export const bodySchema = z.object({
     .min(1, "Enter your date of birth")
     .refine((v) => {
       const age = (Date.now() - new Date(v).getTime()) / (365.25 * 24 * 3600 * 1000);
-      return age >= 13 && age <= 100;
-    }, "You must be between 13 and 100 years old"),
+      return age >= 18 && age <= 100;
+    }, "You must be at least 18 to use FitForge"),
   height_cm: z.number({ error: "Enter your height" }).min(120, "Too short?").max(230, "Too tall?"),
   weight_kg: z.number({ error: "Enter your weight" }).min(30, "Check your weight").max(250, "Check your weight"),
   target_weight_kg: z.number({ error: "Enter a target weight" }).min(30).max(250),

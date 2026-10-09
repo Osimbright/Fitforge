@@ -511,7 +511,13 @@ export default async function LandingPage() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 px-5 py-8 text-sm text-muted md:flex-row md:items-center md:px-8">
           <Logo />
-          <p>© {new Date().getFullYear()} FitForge. General fitness guidance only — not medical advice.</p>
+          <div className="flex flex-col gap-2 md:items-end">
+            <nav className="flex gap-5">
+              <Link href="/privacy" className="hover:text-fg">Privacy</Link>
+              <Link href="/terms" className="hover:text-fg">Terms</Link>
+            </nav>
+            <p>© {new Date().getFullYear()} FitForge. General fitness guidance only — not medical advice.</p>
+          </div>
         </div>
       </footer>
     </div>

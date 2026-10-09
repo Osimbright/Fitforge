@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             style: { background: "#1b1f1d", border: "1px solid #262b28", color: "#f2f5f3" },
           }}
         />
+        <Analytics />
       </body>
     </html>
   );

@@ -96,7 +96,8 @@ function GoogleIdentityButton({ clientId, next }: { clientId: string; next: stri
         onError={() => setScriptFailed(true)}
       />
       <div className="relative flex min-h-11 w-full items-center justify-center">
-        <div ref={slot} className="flex w-full justify-center" />
+        {/* Google's iframe is light-scheme; matching it stops browsers painting a white box behind it on our dark page. */}
+        <div ref={slot} className="flex w-full justify-center [color-scheme:light]" />
         {(!rendered || busy) && (
           <div className="absolute inset-0 flex items-center justify-center rounded-full border border-line bg-surface text-sm text-muted">
             <Loader2 className="h-4 w-4 animate-spin" aria-label={busy ? "Signing in" : "Loading Google sign-in"} />

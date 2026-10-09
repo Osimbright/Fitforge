@@ -1,6 +1,6 @@
 {
   "baseUrl": "http://localhost:3123",
-  "publicRoutes": ["/", "/login", "/signup", "/forgot-password", "/reset-password"],
+  "publicRoutes": ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/privacy", "/terms"],
   "appRoutes": [
     "/dashboard", "/workouts", "/workouts/log", "/workouts/history",
     "/exercises", "/diet", "/progress", "/coach", "/profile"

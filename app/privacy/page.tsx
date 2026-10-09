@@ -58,25 +58,30 @@ export default function PrivacyPage() {
 
       <section>
         <h2>Services that process your data for us</h2>
+        <p className="mb-3">We use a small number of trusted service providers to run FitForge:</p>
         <ul>
           <li>
-            <strong>Supabase</strong> stores your account, profile, logs and photos.
+            <strong>A secure cloud database provider</strong> stores your account, profile, logs and photos.
           </li>
           <li>
-            <strong>Anthropic (Claude)</strong> generates your plans and coach replies. When you use these features,
-            the relevant profile details and messages are sent to Anthropic to produce the response.
+            <strong>An AI provider</strong> generates your plans and coach replies. When you use these features, the
+            relevant profile details and messages are sent to it to produce the response. It does not use your data to
+            train its models.
           </li>
           <li>
-            <strong>Vercel</strong> hosts the website.
+            <strong>A web hosting provider</strong> runs the website.
           </li>
           <li>
-            <strong>Resend</strong> delivers our account emails.
+            <strong>An email delivery provider</strong> sends our account emails.
           </li>
           <li>
             <strong>Google</strong> handles sign-in if you choose &quot;Continue with Google&quot;.
           </li>
         </ul>
-        <p className="mt-3">These providers process data only to run FitForge, under their own security and privacy terms.</p>
+        <p className="mt-3">
+          These providers process data only to run FitForge, under their own security and privacy terms. To request the
+          list of providers we use, email us at the address below.
+        </p>
       </section>
 
       <section>

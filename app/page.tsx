@@ -108,54 +108,6 @@ const STEPS = [
   { n: "03", title: "Train, track, improve", body: "Follow today's workout, log meals in plain words, and let your AI coach keep you on track." },
 ];
 
-// PLACEHOLDER testimonials, shown only until the first real review is approved (Settings → "Share your
-// FitForge story", then approve in Supabase). Delete these before launch: publishing invented reviews as
-// genuine is misleading and breaks consumer-protection rules in most countries.
-const SAMPLE_TESTIMONIALS = [
-  {
-    name: "Priya Nair",
-    context: "Home training · Beginner",
-    result: "−7 kg in 14 weeks",
-    quote:
-      "I'd never followed a plan longer than two weeks. FitForge gave me 30-minute bodyweight sessions I could do before work, and the meal plan used food I actually cook. The streak heatmap became weirdly addictive.",
-  },
-  {
-    name: "Marcus Bell",
-    context: "Gym · Intermediate",
-    result: "+20 kg deadlift",
-    quote:
-      "The live tracker showing last session's numbers mid-set is the feature I didn't know I needed. Progressive overload finally clicked.",
-  },
-  {
-    name: "Sofia Alvarez",
-    context: "Home + gym · Vegetarian",
-    result: "Hit protein 6 days/week",
-    quote:
-      "Every other app assumed I eat chicken three times a day. My plan here is fully vegetarian and still hits my macros. Logging meals in plain words takes seconds.",
-  },
-  {
-    name: "Daniel Okafor",
-    context: "Gym · Returning after injury",
-    result: "Back to squatting pain-free",
-    quote:
-      "I asked the coach about knee pain and it swapped my squats for lighter alternatives and told me to see a physio — no bro-science. That's when I trusted it.",
-  },
-  {
-    name: "Hannah Kim",
-    context: "Home · Busy parent",
-    result: "4 workouts a week, 3 months running",
-    quote:
-      "Twenty minutes, no equipment, done during nap time. The plan adapts when I miss a day instead of making me feel guilty.",
-  },
-  {
-    name: "Leo Martins",
-    context: "Gym · Advanced",
-    result: "Cut to 12% body fat",
-    quote:
-      "I was skeptical an AI could program for someone who's lifted for eight years. The weekly reviews and calorie adjustments were spot on for a slow, controlled cut.",
-  },
-];
-
 const FAQ = [
   {
     q: "Is FitForge free?",
@@ -184,10 +136,8 @@ export const revalidate = 300;
 
 export default async function LandingPage() {
   const approved = await getApprovedTestimonials();
-  const testimonials: { id: string; name: string; context: string | null; result: string | null; quote: string; rating: number | null }[] =
-    approved.length > 0
-      ? approved.map((t) => ({ ...t, name: t.display_name }))
-      : SAMPLE_TESTIMONIALS.map((t) => ({ ...t, id: t.name, rating: null }));
+  // Only real, approved reviews are shown. With none approved, the section and its nav link are hidden.
+  const testimonials = approved.map((t) => ({ ...t, name: t.display_name }));
 
   return (
     <div className="flex flex-col">
@@ -216,7 +166,7 @@ export default async function LandingPage() {
               ["Features", "#features"],
               ["Home & Gym", "#train-anywhere"],
               ["How it works", "#how"],
-              ["Reviews", "#testimonials"],
+              ...(testimonials.length > 0 ? [["Reviews", "#testimonials"]] : []),
               ["Pricing", "#pricing"],
               ["FAQ", "#faq"],
             ].map(([label, href]) => (
@@ -421,6 +371,7 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Testimonials ── */}
+      {testimonials.length > 0 && (
       <section id="testimonials" className="scroll-mt-8 border-y border-line bg-surface/40">
         <div className="mx-auto max-w-7xl px-5 py-24 md:px-8">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
@@ -470,6 +421,7 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ── Pricing ── */}
       <Pricing />

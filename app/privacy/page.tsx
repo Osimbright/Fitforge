@@ -69,7 +69,8 @@ export default function PrivacyPage() {
             train its models.
           </li>
           <li>
-            <strong>A web hosting provider</strong> runs the website.
+            <strong>A web hosting provider</strong> runs the website and gives us anonymous visit and performance
+            statistics (such as page views, country and device type). These use no cookies and cannot identify you.
           </li>
           <li>
             <strong>An email delivery provider</strong> sends our account emails.

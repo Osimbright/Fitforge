@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import { Toaster } from "sonner";
@@ -35,6 +37,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             style: { background: "#1b1f1d", border: "1px solid #262b28", color: "#f2f5f3" },
           }}
         />
+        {/* Anonymous, cookie-free page-view and performance stats (Vercel dashboard → Analytics / Speed Insights). */}
+        <Analytics />
+        <SpeedInsights />
+
       </body>
     </html>
   );
